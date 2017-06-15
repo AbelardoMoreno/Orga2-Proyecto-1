@@ -1,0 +1,84 @@
+.section .data
+	r: .asciz "r"
+	w: .asciz "w"
+	ARCHIVO: .asciz "entrada.txt"
+	ARCHIVOS: .asciz "copia.txt"
+	form: .asciz "imprimio %d\n"
+	form2: .asciz "%c"
+	form3: .asciz "%s"
+	entrada: .long -5
+	salida: .long -5
+		
+.section .bss
+	opcion: .space 4
+	opcion2: .space 4
+	contador: .space 4
+	contador2: .space 4
+.section .text
+
+.globl main
+main:
+	
+#	pushl $r      	#se apila R indicando que es un archivo de Lectura (READ)
+#	pushl ARCHIVO	#es la etiquiera que contiene el nombre del archivo a leer
+#	call fopen	#se llama a la funcion de C FOPEN y recibe por parametro R y ARCHIVO
+#	addl $8,%ebp 	#Se libera el marco de pila...
+
+
+#######################abre archivos###################################
+	leal r,%eax
+	pushl %eax
+	leal ARCHIVO,%eax
+	pushl %eax
+	call fopen
+	addl $8,%esp	
+	movl %eax,entrada
+
+	leal w,%eax
+	pushl %eax
+	leal ARCHIVOS,%eax
+	pushl %eax
+	call fopen
+	addl $8,%esp	
+	movl %eax,salida
+
+#############leo y copio caracteres###########
+	movl $0, contador #inicio el contador en 0
+
+while:
+
+	pushl entrada 			
+	call fgetc			#llamo a la funcion fgetc que agarra un caracter del archivo
+	addl $4,%esp
+
+	movl %eax,opcion		
+	cmpl $0,opcion			#opcion tiene el caracter y lo comparo con 0< ya que el caracter fin de archivo es -1
+	jl endwhile
+
+	pushl salida	
+	pushl opcion			
+	call fputc			#pego el caracter en el archivo de salida sea representable o no, y modificado si tuvo que serlo
+	addl $8,%esp
+
+	jmp while			#vuelve a hacer el ciclo hasta que termine el archivo
+
+endwhile:
+
+
+
+#############cierro archivos################
+
+
+	pushl entrada
+	call fclose
+	addl $4,%esp
+
+	pushl salida
+	call fclose
+	addl $4,%esp
+
+	
+	movl $1, %eax
+	movl $0, %ebx
+	int $0x80
+
